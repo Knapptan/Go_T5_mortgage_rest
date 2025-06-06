@@ -1,7 +1,6 @@
 # Makefile для управления проектом
 
 # Переменные
-GO=go
 COVER_PROFILE=coverage.out
 TEST_PACKAGES=
 NAME=mortgage-calculator
@@ -17,11 +16,11 @@ help: ## Показать справку по целям
 # Основные цели
 .PHONY: build
 build: ## Собрать проект
-	$(GO) build -o bin/$(NAME) ./cmd/
+	go build -o bin/$(NAME) ./cmd/
 
 .PHONY: run
 run: ## Запустить сервер
-	$(GO) run ./cmd/
+	go run ./cmd/
 
 .PHONY: lint
 lint: ## Запустить линтер
@@ -42,11 +41,11 @@ docker-stop: ## Остановка и удаление контейнера
 
 .PHONY: test
 test: ## Запустить все тесты
-	$(GO) test -v $(TEST_PACKAGES)
+	go test -v $(TEST_PACKAGES)
 
 .PHONY: test-race
 test-race: ## Проверить на гонки данных
-	$(GO) test -race $(TEST_PACKAGES)
+	go test -race $(TEST_PACKAGES)
 
 .PHONY: clean
 clean: ## Очистить артефакты сборки
