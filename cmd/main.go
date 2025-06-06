@@ -1,4 +1,4 @@
-// Package main запускает HTTP-сервер Mortgage Calculator.
+// Package main запускает HTTP-сервер Mortgage Calculator
 package main
 
 import (

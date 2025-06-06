@@ -1,4 +1,4 @@
-// Package config парсит конфиг из config.yml.
+// Package config парсит конфиг из config.yml
 package config
 
 import (
@@ -12,7 +12,7 @@ type Config struct {
 	Port int `yaml:"port"`
 }
 
-// Парсит параметры из config.yml и возвращает структуру Config, ошибку.
+// Парсит параметры из config.yml и возвращает структуру Config, ошибку
 func Load() (*Config, error) {
 	data, err := os.ReadFile("config.yml")
 	if err != nil {
