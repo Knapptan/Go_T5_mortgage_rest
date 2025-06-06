@@ -3,7 +3,9 @@
 # Переменные
 GO=go
 COVER_PROFILE=coverage.out
-# TEST_PACKAGES=
+TEST_PACKAGES=
+NAME=mortgage-calculator
+IMAGE_NAME=mortgage-app
 
 # Цели по умолчанию
 .DEFAULT_GOAL := help
@@ -15,13 +17,29 @@ help: ## Показать справку по целям
 # Основные цели
 .PHONY: build
 build: ## Собрать проект
-	$(GO) build -o bin/server ./cmd/
+	$(GO) build -o bin/$(NAME) ./cmd/
 
 .PHONY: run
 run: ## Запустить сервер
 	$(GO) run ./cmd/
 
-# Цели тестирования
+.PHONY: lint
+lint: ## Запустить линтер
+	golangci-lint run -c .golangci.yml ./cmd/
+
+.PHONY: docker-build
+docker-build: ## Сборка Docker-образа
+	docker build -t $(NAME) .
+
+.PHONY: docker-run
+docker-run: ## Запуск контейнера в фоне, проброс порта
+docker run -d -p 8080:8080 --name $(IMAGE_NAME) $(NAME)
+
+.PHONY: docker-stop
+docker-stop: ## Остановка и удаление контейнера
+	docker stop $(IMAGE_NAME)
+	docker rm $(IMAGE_NAME)
+
 .PHONY: test
 test: ## Запустить все тесты
 	$(GO) test -v $(TEST_PACKAGES)
