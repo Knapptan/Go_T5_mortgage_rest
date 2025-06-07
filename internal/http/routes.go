@@ -6,7 +6,7 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine, handler *Handler) {
-	// router.Use(LoggingMiddleware())
+	router.Use(LoggingMiddleware())
 	router.POST("/execute", handler.Execute)
 	router.GET("/cache", handler.GetCache)
 }
