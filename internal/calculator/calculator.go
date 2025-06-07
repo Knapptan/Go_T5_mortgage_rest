@@ -16,6 +16,7 @@ var (
 	ErrInsufficientPayment = errors.New("the initial payment should be more")
 )
 
+// Рассчет запрашиваемых параметров кредита и запись в MortgageResponse
 func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 	// Валидация программы кредита
 	programs := 0
@@ -90,6 +91,8 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 	return resp, nil
 }
 
+// Рассчет размера ежемесячного аннуитетного платежа
 func calculateAnnuity(loanSum, monthlyRate float64, months int) float64 {
-	return 0.0 // TODO logic
+	rateFactor := math.Pow(1+monthlyRate, float64(months))
+	return loanSum * (monthlyRate * rateFactor) / (rateFactor - 1)
 }
