@@ -23,7 +23,8 @@ func main() {
 	handler := http.NewHandler(mortgageCache)
 
 	// Настройка роутера
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 	http.SetupRoutes(router, handler)
 
 	// Запуск сервера
