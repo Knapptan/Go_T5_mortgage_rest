@@ -1,0 +1,47 @@
+// Package http содержит HTTP обработчики
+package http
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
+	"github.com/Knapptan/Go_T5_mortgage_rest/pkg/models"
+)
+
+// Структура с инъекцией зависимости с кэшем
+type Handler struct {
+	cache *cache.Cache
+}
+
+// Конструктр - принимает структуру кэша
+func NewHandler(cache *cache.Cache) *Handler {
+	return &Handler{cache: cache}
+}
+
+// Ручка обработки /execute, метод по указателю для изменнеия кэша, парсит тело запроса в MortgageRequest, вызывает логику и возвращает 200 с результатом в теле или 400 при ошибке c ответом в теле
+func (h *Handler) Execute(c *gin.Context) {
+	var req models.MortgageRequest
+	// Парсинг Json из тела запроса
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	// Вызов логики, обработка логических ошибок
+	resp, err := calculator.Calculate(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Кэширование
+	h.cache.Add(models.CacheItem{
+		Request:  req,
+		Response: resp,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"result": resp})
+}
