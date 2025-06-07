@@ -56,8 +56,7 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 
 	// Расчет параметров
 	loanSum := req.ObjectCost - req.InitialPayment
-	monthlyRate := rate / 100 / 12
-	annuity := calculateAnnuity(loanSum, monthlyRate, req.Months)
+	annuity := calculateAnnuity(loanSum, rate, req.Months)
 	totalPayment := annuity * float64(req.Months)
 	overpayment := totalPayment - loanSum
 	lasDate := time.Now().AddDate(0, req.Months, 0).Format("2006-01-02")
@@ -92,7 +91,12 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 }
 
 // Рассчет размера ежемесячного аннуитетного платежа
-func calculateAnnuity(loanSum, monthlyRate float64, months int) float64 {
-	rateFactor := math.Pow(1+monthlyRate, float64(months))
-	return loanSum * (monthlyRate * rateFactor) / (rateFactor - 1)
+func calculateAnnuity(loanSum, annualRate float64, months int) float64 {
+	monthlyRate := annualRate / 12 / 100
+	if monthlyRate == 0 { // Защита от деления на ноль
+		return loanSum / float64(months)
+	}
+	discountFactor := math.Pow(1+monthlyRate, float64(months))
+	annuity := loanSum * monthlyRate * discountFactor / (discountFactor - 1)
+	return math.Round(annuity*100) / 100 // Округление до копеек
 }
