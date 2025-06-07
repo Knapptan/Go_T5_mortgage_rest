@@ -3,9 +3,12 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/Knapptan/Go_T5_mortgage_rest/config"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/http"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -15,9 +18,17 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	log.Println(cfg) // TODO убрать 
+	// Инициализация компонентов
+	mortgageCache := cache.New()
+	handler := http.NewHandler(mortgageCache)
 
-	mortgageCache:= cache.New() 
+	// Настройка роутера
+	router := gin.Default()
+	http.SetupRoutes(router, handler)
 
-	log.Println(mortgageCache) // TODO убрать 
+	// Запуск сервера
+	log.Printf("Starting server on port %d", cfg.Port)
+	if err := router.Run(":" + strconv.Itoa(cfg.Port)); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

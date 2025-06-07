@@ -23,11 +23,17 @@ func New() *Cache {
 }
 
 // Метод добавления
-func (c *Cache) Add(item models.CacheItem) {
+func (c *Cache) Add(response models.MortgageResponse) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	item.ID = c.nextID
+	item := models.CacheItem{
+		ID:         c.nextID,
+		Params:     response.Params,
+		Program:    response.Program,
+		Aggregates: response.Aggregates,
+	}
+
 	c.nextID++
 	c.items = append(c.items, item)
 }
@@ -36,10 +42,7 @@ func (c *Cache) Add(item models.CacheItem) {
 func (c *Cache) GetAll() []models.CacheItem {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
-	result := make([]models.CacheItem, len(c.items))
-	copy(result, c.items)
-	return result
+	return c.items
 }
 
 // Метод проверки на пустоту

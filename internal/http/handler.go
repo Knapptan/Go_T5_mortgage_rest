@@ -38,10 +38,17 @@ func (h *Handler) Execute(c *gin.Context) {
 	}
 
 	// Кэширование
-	h.cache.Add(models.CacheItem{
-		Request:  req,
-		Response: resp,
-	})
+	h.cache.Add(resp)
 
 	c.JSON(http.StatusOK, gin.H{"result": resp})
+}
+
+// Ручка обработкии /cache возвращает все закешированые значения 
+func (h *Handler) GetCache(c *gin.Context) {
+	if h.cache.IsEmpty() {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty cache"})
+		return
+	}
+
+	c.JSON(http.StatusOK, h.cache.GetAll())
 }
