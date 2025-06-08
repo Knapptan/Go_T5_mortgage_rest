@@ -16,6 +16,8 @@ var (
 	ErrInsufficientPayment = errors.New("the initial payment should be more")
 )
 
+// TODO попробовать сделать на децимал
+
 // Рассчет запрашиваемых параметров кредита и запись в MortgageResponse
 func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 	// Валидация программы кредита
@@ -63,23 +65,13 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 
 	// Формирование ответа
 	resp := models.MortgageResponse{
-		Params: struct {
-			ObjectCost     float64 `json:"object_cost"`
-			InitialPayment float64 `json:"initial_payment"`
-			Months         int     `json:"months"`
-		}{
+		Params: models.MortgageParams{
 			ObjectCost:     req.ObjectCost,
 			InitialPayment: req.InitialPayment,
 			Months:         req.Months,
 		},
 		Program: req.Program,
-		Aggregates: struct {
-			Rate            float64 `json:"rate"`
-			LoanSum         float64 `json:"loan_sum"`
-			MonthlyPayment  float64 `json:"monthly_payment"`
-			Overpayment     float64 `json:"overpayment"`
-			LastPaymentDate string  `json:"last_payment_date"`
-		}{
+		Aggregates: models.MortgageAggregates{
 			Rate:            rate,
 			LoanSum:         math.Round(loanSum*100) / 100,
 			MonthlyPayment:  math.Round(annuity*100) / 100,
@@ -87,6 +79,7 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 			LastPaymentDate: lasDate,
 		},
 	}
+
 	return resp, nil
 }
 
