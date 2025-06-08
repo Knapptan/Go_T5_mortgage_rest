@@ -221,3 +221,33 @@ func TestCalculate_InvalidParameters(t *testing.T) {
 		})
 	}
 }
+
+// Проверяем, что NewService возвращает непустой объект
+func TestNewService(t *testing.T) {
+	s := NewService()
+	assert.NotNil(t, s)
+}
+
+// TestService_Calculate_WrapsCalculate проверяет, что метод Service.Calculate
+// действительно просто вызывает функцию Calculate и возвращает её результат.
+func TestService_Calculate_WrapsCalculate(t *testing.T) {
+	svc := NewService()
+
+	// Подготовим "валидный" запрос, который Calculate успешно обработает
+	req := models.MortgageRequest{
+		ObjectCost:     1000,
+		InitialPayment: 200,
+		Months:         12,
+		Program:        models.MortgageProgram{Salary: true},
+	}
+
+	// Получаем ожидаемый результат, вызывая напрямую Calculate
+	wantResp, wantErr := Calculate(req)
+
+	// Вызываем метод обёртки
+	gotResp, gotErr := svc.Calculate(req)
+
+	// Сравниваем оба результата
+	assert.Equal(t, wantErr, gotErr, "Service.Calculate should return same error as Calculate")
+	assert.Equal(t, wantResp, gotResp, "Service.Calculate should return same response as Calculate")
+}

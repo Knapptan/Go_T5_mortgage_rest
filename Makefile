@@ -2,7 +2,9 @@
 
 # Переменные
 COVER_PROFILE=coverage.out
-TEST_PACKAGES=
+TEST_PACKAGES=$$(go list ./... \
+  | grep -v "/cmd" \
+  | grep -v "/internal/models")
 NAME=mortgage-calculator
 IMAGE_NAME=mortgage-app
 
@@ -45,7 +47,9 @@ test: ## Запустить все тесты
 
 .PHONY: test-coverage
 test-coverage: ## Запуск тестов для проверки покрытия
-	@go test ./... -cover
+	@go test $(TEST_PACKAGES) -coverprofile=coverage.out
+	@go tool cover -func=coverage.out
+	@rm coverage.out
 
 .PHONY: test-race
 test-race: ## Проверить на гонки данных

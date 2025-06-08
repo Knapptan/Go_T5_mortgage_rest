@@ -186,3 +186,41 @@ func TestGetCacheHandler_MultipleItems(t *testing.T) {
 	assert.Equal(t, 10000.0, response[0].Aggregates.MonthlyPayment)
 	assert.Equal(t, 30000.0, response[2].Aggregates.MonthlyPayment)
 }
+
+func TestHandler_UnsupportedMethods(t *testing.T) {
+	mockCalc := new(MockCalculator)
+	mockCache := new(MockCache)
+	handler := NewHandler(mockCalc, mockCache)
+
+	// Пробуем GET для /execute
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/execute", nil)
+	handler.Execute(c)
+	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
+
+	// Пробуем POST для /cache
+	w = httptest.NewRecorder()
+	c, _ = gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/cache", nil)
+	handler.GetCache(c)
+	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
+}
+
+func TestNewHandler_PanicsOnNilDependencies(t *testing.T) {
+	mockCalc := new(MockCalculator)
+	mockCache := new(MockCache)
+	// nil калькулятор + валидный кэш => panic
+	assert.Panics(t, func() {
+		NewHandler(nil, mockCache)
+	}, "should panic when calculator is nil")
+
+	// валидный калькулятор + nil кэш => panic
+	assert.Panics(t, func() {
+		NewHandler(mockCalc, nil)
+	}, "should panic when cache is nil")
+
+	// оба ненил => не паникит
+	assert.NotPanics(t, func() {
+	}, "should not panic when both deps provided")
+}
