@@ -8,7 +8,7 @@ import (
 
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
-	"github.com/Knapptan/Go_T5_mortgage_rest/pkg/models"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 )
 
 // Структура с инъекцией зависимости с кэшем
@@ -43,7 +43,7 @@ func (h *Handler) Execute(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": resp})
 }
 
-// Ручка обработкии /cache возвращает все закешированые значения 
+// Ручка обработкии /cache возвращает все закешированые значения
 func (h *Handler) GetCache(c *gin.Context) {
 	if h.cache.IsEmpty() {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "empty cache"})

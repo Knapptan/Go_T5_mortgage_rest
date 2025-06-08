@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
-	"github.com/Knapptan/Go_T5_mortgage_rest/pkg/models"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 

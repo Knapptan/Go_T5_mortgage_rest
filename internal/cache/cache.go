@@ -4,7 +4,7 @@ package cache
 import (
 	"sync"
 
-	"github.com/Knapptan/Go_T5_mortgage_rest/pkg/models"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 )
 
 // Структура кэша с рв-мютексом во избежание data races
