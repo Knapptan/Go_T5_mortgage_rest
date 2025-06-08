@@ -41,19 +41,17 @@ docker-stop: ## Остановка и удаление контейнера
 
 .PHONY: test
 test: ## Запустить все тесты
-	go test -v $(TEST_PACKAGES)
+	@go test -v $(TEST_PACKAGES)
 
 .PHONY: test-coverage
 test-coverage: ## Запуск тестов для проверки покрытия
-	go test ./... -coverprofile=coverage.out
-  go tool cover -func=coverage.out
-  go tool cover -html=coverage.out -o coverage.html
+	@go test ./... -cover
 
 .PHONY: test-race
 test-race: ## Проверить на гонки данных
-	go test -race $(TEST_PACKAGES)
+	@go test -race $(TEST_PACKAGES)
 
 .PHONY: clean
 clean: ## Очистить артефакты сборки
-	rm -rf bin/
-	rm -f $(COVER_PROFILE)
+	@rm -rf bin/
+	@rm -f $(COVER_PROFILE)
