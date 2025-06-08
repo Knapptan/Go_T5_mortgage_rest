@@ -1,10 +1,11 @@
 // Тесты осноной логики сервиса calculator
-package calculator
+package calculator_test
 
 import (
 	"testing"
 	"time"
 
+	. "github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

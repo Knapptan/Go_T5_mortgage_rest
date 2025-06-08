@@ -1,11 +1,12 @@
 // Тесты пакета config
-package config
+package config_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
+	. "github.com/Knapptan/Go_T5_mortgage_rest/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +16,7 @@ func TestLoad_Success(t *testing.T) {
 	content := []byte(`
 port: 9090
 `)
-	tmpfile, err := os.CreateTemp("", "config.*.yaml")
+	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -34,7 +35,7 @@ port: 9090
 func TestLoad_DefaultPort(t *testing.T) {
 	// Создаем конфиг без порта
 	content := []byte(``)
-	tmpfile, err := os.CreateTemp("", "config.*.yaml")
+	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -56,7 +57,7 @@ func TestLoad_FileNotExist(t *testing.T) {
 func TestLoad_InvalidYAML(t *testing.T) {
 	// Создаем битый YAML
 	content := []byte(`port: "should_be_number"`)
-	tmpfile, err := os.CreateTemp("", "config.*.yaml")
+	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -71,7 +72,7 @@ func TestLoad_InvalidYAML(t *testing.T) {
 
 func TestLoad_EmptyConfig(t *testing.T) {
 	content := []byte(`{}`)
-	tmpfile, err := os.CreateTemp("", "config.*.yaml")
+	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
 
@@ -99,7 +100,7 @@ func TestLoad_PortBoundaries(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			content := []byte(fmt.Sprintf("port: %d", tt.port))
-			tmpfile, err := os.CreateTemp("", "config.*.yaml")
+			tmpfile, err := os.CreateTemp("", "*.yaml")
 			require.NoError(t, err)
 			defer os.Remove(tmpfile.Name())
 

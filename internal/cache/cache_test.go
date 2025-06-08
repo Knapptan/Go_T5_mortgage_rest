@@ -1,9 +1,10 @@
 // Тесты пакета cache
-package cache
+package cache_test
 
 import (
 	"testing"
 
+	. "github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +16,6 @@ func TestNewCache_InitialState(t *testing.T) {
 	assert.True(t, c.IsEmpty())
 	assert.Equal(t, 0, len(c.GetAll()))
 }
-
 
 // Тест Add: проставляет ID начиная с 0, увеличивает nextID и сохраняет данные
 func TestCache_AddAssignsIncrementalIDs(t *testing.T) {
