@@ -1,6 +1,16 @@
 # Ипотечный калькулятор
 
-## Запуск
+## Сборка и запуск
+
+- make docker-build
+
+- make docker-run
+
+## API Endpoints
+
+- POST /execute - расчет ипотеки
+
+- GET /cache - получение кэшированных расчетов
 
 ## Функциональность:
 
@@ -32,7 +42,7 @@
 
 - Dockerfile
 
-- Вес образа <30MB (Alpine-based образ ~12MB)
+- Вес образа <30MB (Alpine-based образ ~22.5MB)
 
 ## Makefile с командами
 

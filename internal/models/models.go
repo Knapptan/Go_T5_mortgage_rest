@@ -34,7 +34,7 @@ type MortgageInfoResponse struct {
 	Aggregates MortgageAggregates `json:"aggregates"` // Полученные агрегированные результаты.
 	Params     MortgageParams     `json:"params"`     // Входные параметры кредита.
 	Program    MortgageProgram    `json:"program"`    // Выбранная ипотечная программа.
-	ID         int                // Уникальный идентификатор расчёта.
+	ID         int                `json:"id"`         // Уникальный идентификатор расчёта.
 }
 
 // MortgageRequest описывает JSON-запрос к сервису расчёта ипотечного кредита.
