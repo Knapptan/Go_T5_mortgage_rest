@@ -5,7 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(router *gin.Engine, handler *Handler) {
+// HandlerInterface определяет контракт для обработчиков
+type HandlerInterface interface {
+	Execute(c *gin.Context)
+	GetCache(c *gin.Context)
+}
+
+func SetupRoutes(router *gin.Engine, handler HandlerInterface) {
 	router.Use(LoggingMiddleware())
 	router.POST("/execute", handler.Execute)
 	router.GET("/cache", handler.GetCache)
