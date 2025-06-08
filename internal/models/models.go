@@ -46,3 +46,6 @@ type MortgageResponse struct {
 	Program    MortgageProgram    `json:"program"`    // блок программы кредита
 	Aggregates MortgageAggregates `json:"aggregates"` // блок с агрегатами
 }
+
+// Константа временного формата
+const DateFormat = "2006-01-02"

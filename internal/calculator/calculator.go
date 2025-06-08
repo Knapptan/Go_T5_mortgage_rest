@@ -61,7 +61,7 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 	annuity := calculateAnnuity(loanSum, rate, req.Months)
 	totalPayment := annuity * float64(req.Months)
 	overpayment := totalPayment - loanSum
-	lasDate := time.Now().AddDate(0, req.Months, 0).Format("2006-01-02")
+	lasDate := time.Now().AddDate(0, req.Months, 0).Format(models.DateFormat)
 
 	// Формирование ответа
 	resp := models.MortgageResponse{
