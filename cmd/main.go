@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Инициализация компонентов
-	mortgageCache := cache.New()
+	mortgageCache := cache.NewCache()
 	handler := myhttp.NewHandler(mortgageCache)
 
 	// Настройка роутера
