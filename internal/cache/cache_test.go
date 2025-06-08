@@ -16,6 +16,7 @@ func TestNewCache_InitialState(t *testing.T) {
 	assert.Equal(t, 0, len(c.GetAll()))
 }
 
+
 // Тест Add: проставляет ID начиная с 0, увеличивает nextID и сохраняет данные
 func TestCache_AddAssignsIncrementalIDs(t *testing.T) {
 	c := NewCache()

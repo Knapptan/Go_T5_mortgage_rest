@@ -43,9 +43,7 @@ func (c *Cache) GetAll() []models.MortgageInfoResponse {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	// Создаём новый срез нужной длины
 	result := make([]models.MortgageInfoResponse, len(c.items))
-	// Копируем все элементы
 	copy(result, c.items)
 	return result
 }
