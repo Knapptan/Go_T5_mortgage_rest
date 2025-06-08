@@ -14,6 +14,7 @@ import (
 
 	"github.com/Knapptan/Go_T5_mortgage_rest/config"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
+	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
 	myhttp "github.com/Knapptan/Go_T5_mortgage_rest/internal/http"
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +31,8 @@ func main() {
 
 	// Инициализация компонентов
 	mortgageCache := cache.NewCache()
-	handler := myhttp.NewHandler(mortgageCache)
+	calcService := calculator.NewService()
+	handler := myhttp.NewHandler(calcService, mortgageCache)
 
 	// Настройка роутера
 	gin.SetMode(gin.ReleaseMode)

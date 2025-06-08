@@ -6,19 +6,32 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Knapptan/Go_T5_mortgage_rest/internal/cache"
-	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 )
 
-// Структура с инъекцией зависимости с кэшем
-type Handler struct {
-	cache *cache.Cache
+// Интерфейсы для зависимостей
+type MortgageCalculator interface {
+	Calculate(req models.MortgageRequest) (models.MortgageResponse, error)
 }
 
-// Конструктр - принимает структуру кэша
-func NewHandler(cache *cache.Cache) *Handler {
-	return &Handler{cache: cache}
+type MortgageCache interface {
+	Add(response models.MortgageResponse)
+	GetAll() []models.MortgageInfoResponse
+	IsEmpty() bool
+}
+
+// Структура с инъекцией зависимости
+type Handler struct {
+	calculator MortgageCalculator
+	cache      MortgageCache
+}
+
+// Конструктр - принимает интерфейсы калькулятора и кэша
+func NewHandler(calc MortgageCalculator, cache MortgageCache) *Handler {
+	return &Handler{
+		calculator: calc,
+		cache:      cache,
+	}
 }
 
 // Ручка обработки /execute, метод по указателю для изменнеия кэша, парсит тело запроса в MortgageRequest, вызывает логику и возвращает 200 с результатом в теле или 400 при ошибке c ответом в теле
@@ -31,7 +44,7 @@ func (h *Handler) Execute(c *gin.Context) {
 	}
 
 	// Вызов логики, обработка логических ошибок
-	resp, err := calculator.Calculate(req)
+	resp, err := h.calculator.Calculate(req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

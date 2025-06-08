@@ -9,6 +9,12 @@ import (
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 )
 
+type Service struct{}
+
+func NewService() *Service {
+	return &Service{}
+}
+
 // Ошибки для возврата соответсвующего тела ответа
 var (
 	ErrNoProgramSelected   = errors.New("choose program")                                   // не выбрана ни одна программа
@@ -18,6 +24,11 @@ var (
 	ErrInvalidDuration     = errors.New("loan duration must be at least 1 month")           // срок меньше 1 месяца
 	ErrExcessivePayment    = errors.New("initial payment cannot exceed object cost")        // первоначальный взнос больше стоимости объекта
 )
+
+// Реализуем интерфейс MortgageCalculator
+func (s *Service) Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
+	return Calculate(req)
+}
 
 // Рассчет запрашиваемых параметров кредита и запись в MortgageResponse
 func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
