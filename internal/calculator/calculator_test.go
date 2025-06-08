@@ -1,13 +1,13 @@
 // осноной логики сервиса
-package calculator_test
+package calculator
 
 import (
 	"testing"
 	"time"
 
-	"github.com/Knapptan/Go_T5_mortgage_rest/internal/calculator"
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCalculate(t *testing.T) {
@@ -18,7 +18,7 @@ func TestCalculate(t *testing.T) {
 		err      error
 	}{
 		{
-			name: "Valid salary program 0",
+			name: "valid salary program 0",
 			request: models.MortgageRequest{
 				ObjectCost:     5000000,
 				InitialPayment: 1000000,
@@ -46,7 +46,7 @@ func TestCalculate(t *testing.T) {
 			},
 		},
 		{
-			name: "Valid salary program 1",
+			name: "valid salary program 1",
 			request: models.MortgageRequest{
 				ObjectCost:     8000000,
 				InitialPayment: 2000000,
@@ -74,7 +74,7 @@ func TestCalculate(t *testing.T) {
 			},
 		},
 		{
-			name: "Valid salary program 2",
+			name: "valid salary program 2",
 			request: models.MortgageRequest{
 				ObjectCost:     12000000,
 				InitialPayment: 3000000,
@@ -105,7 +105,7 @@ func TestCalculate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := calculator.Calculate(tt.request)
+			resp, err := Calculate(tt.request)
 
 			if tt.err != nil {
 				assert.Error(t, err)
@@ -117,6 +117,106 @@ func TestCalculate(t *testing.T) {
 			assert.Equal(t, tt.expected.Aggregates.Rate, resp.Aggregates.Rate)
 			assert.InDelta(t, tt.expected.Aggregates.MonthlyPayment, resp.Aggregates.MonthlyPayment, 1.0)
 			assert.Equal(t, tt.expected.Aggregates.LastPaymentDate, resp.Aggregates.LastPaymentDate)
+		})
+	}
+}
+
+func TestCalculate_InvalidParameters(t *testing.T) {
+	tests := []struct {
+		name    string
+		req     models.MortgageRequest
+		wantErr error
+	}{
+		{
+			name: "zero program",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 500000,
+				Months:         120,
+				Program:        models.MortgageProgram{},
+			},
+			wantErr: ErrNoProgramSelected,
+		},
+		{
+			name: "more then one program",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 500000,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true, Military: true},
+			},
+			wantErr: ErrMultiplePrograms,
+		},
+		{
+			name: "zero initial payment",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 0,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrInsufficientPayment,
+		},
+		{
+			name: "negative object cost",
+			req: models.MortgageRequest{
+				ObjectCost:     -1000000,
+				InitialPayment: 200000,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrInvalidParameters,
+		},
+		{
+			name: "negative initial payment",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: -1,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrInvalidParameters,
+		},
+		{
+			name: "initial payment exceed object cost",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 1000001,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrExcessivePayment,
+		},
+		{
+			name: "invalid duration",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 200000,
+				Months:         0,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrInvalidDuration,
+		},
+		{
+			name: "initial payment exceeds cost",
+			req: models.MortgageRequest{
+				ObjectCost:     1000000,
+				InitialPayment: 2000000,
+				Months:         120,
+				Program:        models.MortgageProgram{Base: true},
+			},
+			wantErr: ErrExcessivePayment,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Calculate(tt.req)
+			if tt.wantErr == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.wantErr.Error())
+			}
 		})
 	}
 }

@@ -11,15 +11,26 @@ import (
 
 // Ошибки для возврата соответсвующего тела ответа
 var (
-	ErrNoProgramSelected   = errors.New("choose program")
-	ErrMultiplePrograms    = errors.New("choose only 1 program")
-	ErrInsufficientPayment = errors.New("the initial payment should be more")
+	ErrNoProgramSelected   = errors.New("choose program")                                   // не выбрана ни одна программа
+	ErrMultiplePrograms    = errors.New("choose only 1 program")                            // выбрано несколько прогармм
+	ErrInsufficientPayment = errors.New("the initial payment should be more")               // первоначальный взнос меньше требуемого
+	ErrInvalidParameters   = errors.New("object cost and initial payment must be positive") // отрицательные занчания стоимости или первоначального взноса
+	ErrInvalidDuration     = errors.New("loan duration must be at least 1 month")           // срок меньше 1 месяца
+	ErrExcessivePayment    = errors.New("initial payment cannot exceed object cost")        // первоначальный взнос больше стоимости объекта
 )
-
-// TODO попробовать сделать на децимал
 
 // Рассчет запрашиваемых параметров кредита и запись в MortgageResponse
 func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
+	// Валидация входных параметров
+	if req.ObjectCost <= 0 || req.InitialPayment < 0 {
+		return models.MortgageResponse{}, ErrInvalidParameters
+	}
+
+	// Валидация временного промежутка
+	if req.Months < 1 {
+		return models.MortgageResponse{}, ErrInvalidDuration
+	}
+
 	// Валидация программы кредита
 	programs := 0
 	if req.Program.Salary {
@@ -40,6 +51,9 @@ func Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
 	}
 
 	// Валидация взноса
+	if req.InitialPayment > req.ObjectCost {
+		return models.MortgageResponse{}, ErrExcessivePayment
+	}
 	minPayment := req.ObjectCost * 0.2
 	if req.InitialPayment < minPayment {
 		return models.MortgageResponse{}, ErrInsufficientPayment
