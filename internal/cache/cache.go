@@ -10,14 +10,14 @@ import (
 // Структура кэша с рв-мютексом во избежание data races
 type Cache struct {
 	mu     sync.RWMutex
-	items  []models.CacheItem
+	items  []models.MortgageInfoResponse
 	nextID int
 }
 
 // Конструктор
 func New() *Cache {
 	return &Cache{
-		items:  make([]models.CacheItem, 0),
+		items:  make([]models.MortgageInfoResponse, 0),
 		nextID: 1,
 	}
 }
@@ -27,7 +27,7 @@ func (c *Cache) Add(response models.MortgageResponse) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	item := models.CacheItem{
+	item := models.MortgageInfoResponse{
 		ID:         c.nextID,
 		Params:     response.Params,
 		Program:    response.Program,
@@ -39,7 +39,7 @@ func (c *Cache) Add(response models.MortgageResponse) {
 }
 
 // Метод получения всех записей
-func (c *Cache) GetAll() []models.CacheItem {
+func (c *Cache) GetAll() []models.MortgageInfoResponse {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.items

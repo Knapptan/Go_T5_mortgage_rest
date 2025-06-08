@@ -25,7 +25,7 @@ type MortgageAggregates struct {
 }
 
 // Структура для кэширования запросов
-type CacheItem struct {
+type MortgageInfoResponse struct {
 	ID         int                // id расчета в кэше
 	Params     MortgageParams     `json:"params"`     // запрашиваемые параметры кредита
 	Program    MortgageProgram    `json:"program"`    // блок программы кредита
