@@ -1,4 +1,4 @@
-// Тесты пакета handler-ов
+// Package http_test содержит модульные тесты для HTTP-обработчиков, реализующих логику REST API ипотечного калькулятора.
 package http_test
 
 import (
@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockCache реализует MortgageCache
+// MockCache реализует интерфейс MortgageCache для целей тестирования.
 type MockCache struct {
 	mock.Mock
 }
@@ -34,7 +34,7 @@ func (m *MockCache) IsEmpty() bool {
 	return args.Bool(0)
 }
 
-// MockCalculator реализует MortgageCalculator
+// MockCalculator реализует интерфейс MortgageCalculator для целей тестирования.
 type MockCalculator struct {
 	mock.Mock
 }
@@ -44,12 +44,13 @@ func (m *MockCalculator) Calculate(req models.MortgageRequest) (models.MortgageR
 	return args.Get(0).(models.MortgageResponse), args.Error(1)
 }
 
-// Вспомогательная функция для преобразования в JSON
+// mustJSON сериализует переданное значение в JSON. Паника при ошибке игнорируется, так как функция используется только в тестах.
 func mustJSON(v interface{}) []byte {
 	data, _ := json.Marshal(v)
 	return data
 }
 
+// TestExecuteHandler_Success проверяет успешную обработку запроса на расчёт ипотеки.
 func TestExecuteHandler_Success(t *testing.T) {
 	// Инициализация моков
 	mockCalc := new(MockCalculator)
@@ -95,6 +96,7 @@ func TestExecuteHandler_Success(t *testing.T) {
 	mockCache.AssertExpectations(t)
 }
 
+// TestGetCacheHandler_Success проверяет успешное получение содержимого кэша при наличии данных.
 func TestGetCacheHandler_Success(t *testing.T) {
 	mockCalc := new(MockCalculator)
 	mockCache := new(MockCache)
@@ -133,6 +135,7 @@ func TestGetCacheHandler_Success(t *testing.T) {
 	mockCache.AssertExpectations(t)
 }
 
+// TestGetCacheHandler_EmptyCache проверяет обработку случая, когда кэш пуст.
 func TestGetCacheHandler_EmptyCache(t *testing.T) {
 	mockCalc := new(MockCalculator)
 	mockCache := new(MockCache)
@@ -155,6 +158,7 @@ func TestGetCacheHandler_EmptyCache(t *testing.T) {
 	mockCache.AssertExpectations(t)
 }
 
+// TestGetCacheHandler_MultipleItems проверяет, что обработчик возвращает все элементы из кэша.
 func TestGetCacheHandler_MultipleItems(t *testing.T) {
 	mockCalc := new(MockCalculator)
 	mockCache := new(MockCache)
@@ -187,6 +191,7 @@ func TestGetCacheHandler_MultipleItems(t *testing.T) {
 	assert.Equal(t, 30000.0, response[2].Aggregates.MonthlyPayment)
 }
 
+// TestHandler_UnsupportedMethods проверяет, что обработчики возвращают 405 для неподдерживаемых HTTP-методов.
 func TestHandler_UnsupportedMethods(t *testing.T) {
 	mockCalc := new(MockCalculator)
 	mockCache := new(MockCache)
@@ -207,6 +212,7 @@ func TestHandler_UnsupportedMethods(t *testing.T) {
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 }
 
+// TestNewHandler_PanicsOnNilDependencies проверяет, что при создании обработчика с nil-зависимостями возникает panic.
 func TestNewHandler_PanicsOnNilDependencies(t *testing.T) {
 	mockCalc := new(MockCalculator)
 	mockCache := new(MockCache)

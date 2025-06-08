@@ -22,34 +22,32 @@ import (
 const configFile = "config.yml"
 
 func main() {
-	// Загрузка конфигурации
+	// Загружаем конфигурацию из файла
 	cfg, err := config.Load(configFile)
 	if err != nil {
-		// Если не получилось — сообщаем, какой файл вызвал ошибку
 		log.Fatalf("Failed to load config from %q: %v", configFile, err)
 	}
 
-	// Инициализация компонентов
+	// Инициализируем кэш, сервис калькулятора и HTTP-хендлер
 	mortgageCache := cache.NewCache()
 	calcService := calculator.NewService()
 	handler := myhttp.NewHandler(calcService, mortgageCache)
 
-	// Настройка роутера
+	// Настраиваем Gin в режиме релиза и создаем роутер
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	myhttp.SetupRoutes(router, handler)
 
-	// Создаем HTTP-сервер с таймаутами
+	// Создаем HTTP-сервер с таймаутами для чтения, записи и простоя
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(cfg.Port),
-		Handler: router,
-		// Рекомендуемые таймауты для production
+		Addr:         ":" + strconv.Itoa(cfg.Port),
+		Handler:      router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
 
-	// Запуск сервера в горутине
+	// Запускаем сервер в отдельной горутине
 	go func() {
 		log.Printf("Starting server on port %d", cfg.Port)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -57,19 +55,16 @@ func main() {
 		}
 	}()
 
-	// Канал для сигналов ОС
+	// Ожидаем сигнал завершения работы (SIGINT, SIGTERM)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-	// Блокируем, пока не получим сигнал
 	<-quit
 	log.Printf("Shutdown signal received")
 
-	// Создаем контекст с таймаутом для graceful shutdown 5 секунд
+	// Выполняем graceful shutdown с таймаутом 5 секунд
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Останавливаем сервер
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Printf("Server forced to shutdown: %v", err)
 		return

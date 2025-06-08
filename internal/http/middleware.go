@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// LoggingMiddleware возвращает middleware для Gin, который логирует статус ответа и длительность обработки запроса.
 func LoggingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

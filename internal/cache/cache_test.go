@@ -1,4 +1,4 @@
-// Тесты пакета cache
+// Package cache_test содержит модульные тесты для пакета cache.
 package cache_test
 
 import (
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Тест конструктора и начального состояния
+// TestNewCache_InitialState проверяет корректность инициализации нового кэша.
 func TestNewCache_InitialState(t *testing.T) {
 	c := NewCache()
 	assert.NotNil(t, c)
@@ -17,11 +17,10 @@ func TestNewCache_InitialState(t *testing.T) {
 	assert.Equal(t, 0, len(c.GetAll()))
 }
 
-// Тест Add: проставляет ID начиная с 0, увеличивает nextID и сохраняет данные
+// TestCache_AddAssignsIncrementalIDs проверяет, что Add присваивает элементы с автоинкрементным ID.
 func TestCache_AddAssignsIncrementalIDs(t *testing.T) {
 	c := NewCache()
 
-	// Два ответа с пустыми полями
 	resp1 := models.MortgageResponse{}
 	resp2 := models.MortgageResponse{}
 
@@ -30,59 +29,52 @@ func TestCache_AddAssignsIncrementalIDs(t *testing.T) {
 
 	all := c.GetAll()
 	assert.Len(t, all, 2)
-
-	// Первому должна быть присвоена ID=0, второму ID=1
 	assert.Equal(t, 0, all[0].ID)
 	assert.Equal(t, 1, all[1].ID)
 }
 
-// Тест GetAll: возвращает копию среза, не ссылку на внутренний
+// TestCache_GetAll_ReturnsCopy проверяет, что GetAll возвращает копию среза, а не ссылку на внутренние данные.
 func TestCache_GetAll_ReturnsCopy(t *testing.T) {
 	c := NewCache()
 	resp := models.MortgageResponse{}
 	c.Add(resp)
 
 	all1 := c.GetAll()
-	all1[0].ID = 999 // мутируем возвращённый срез
+	all1[0].ID = 999
 
 	all2 := c.GetAll()
-	// Внутренний срез не изменился
 	assert.Equal(t, 0, all2[0].ID)
 }
 
-// Тест Get: существующий ID
+// TestCache_GetExisting проверяет получение существующего элемента по ID.
 func TestCache_GetExisting(t *testing.T) {
 	c := NewCache()
 	resp := models.MortgageResponse{}
-	c.Add(resp) // ID=0
+	c.Add(resp)
 
 	item, found := c.Get(0)
 	assert.True(t, found)
 	assert.Equal(t, 0, item.ID)
 }
 
-// Тест Get: несуществующий ID
+// TestCache_GetNotFound проверяет поведение Get при запросе несуществующего ID.
 func TestCache_GetNotFound(t *testing.T) {
 	c := NewCache()
-	// Ни одного Add — ID=0 не существует
+
 	_, found := c.Get(0)
 	assert.False(t, found)
 
-	// Добавим один, с ID=0
 	c.Add(models.MortgageResponse{})
-	// Запросим ID=1 — тоже не должно найти
 	_, found = c.Get(1)
 	assert.False(t, found)
 }
 
-// Тест IsEmpty после операций
+// TestCache_IsEmptyBehavior проверяет корректность работы метода IsEmpty.
 func TestCache_IsEmptyBehavior(t *testing.T) {
 	c := NewCache()
 	assert.True(t, c.IsEmpty())
 
 	c.Add(models.MortgageResponse{})
 	assert.False(t, c.IsEmpty())
-
-	// После добавления одного элемента GetAll непустой
 	assert.NotEmpty(t, c.GetAll())
 }

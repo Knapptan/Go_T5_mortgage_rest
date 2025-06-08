@@ -1,4 +1,4 @@
-// Package cache это реализация кэша
+// Package cache предоставляет потокобезопасную реализацию кэша для ипотечных расчётов.
 package cache
 
 import (
@@ -7,14 +7,14 @@ import (
 	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 )
 
-// Структура кэша с рв-мютексом во избежание data races
+// Cache представляет потокобезопасный кэш с RWMutex для хранения ипотечных расчётов.
 type Cache struct {
 	mu     sync.RWMutex
 	items  []models.MortgageInfoResponse
 	nextID int
 }
 
-// NewCache - конструктор
+// NewCache создаёт и возвращает новый экземпляр Cache.
 func NewCache() *Cache {
 	return &Cache{
 		items:  make([]models.MortgageInfoResponse, 0),
@@ -22,7 +22,7 @@ func NewCache() *Cache {
 	}
 }
 
-// Add добавляет в кэш стурктуры MortgageResponse (с добавлением ID)
+// Add добавляет новый элемент в кэш на основе MortgageResponse, присваивая уникальный ID.
 func (c *Cache) Add(response models.MortgageResponse) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -38,7 +38,7 @@ func (c *Cache) Add(response models.MortgageResponse) {
 	c.items = append(c.items, item)
 }
 
-// GetAll возвращает копию среза items, чтобы внешние мутации не влияли на внутренний кеш.
+// GetAll возвращает копию всех элементов кэша, чтобы избежать внешних изменений данных.
 func (c *Cache) GetAll() []models.MortgageInfoResponse {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -48,9 +48,8 @@ func (c *Cache) GetAll() []models.MortgageInfoResponse {
 	return result
 }
 
-// Get для получения записи по ID
-// Если элемент найден, возвращает (item, true).
-// Если нет — (zero, false).
+// Get возвращает элемент по заданному ID.
+// Если элемент найден, возвращает его и true; иначе — zero-значение и false.
 func (c *Cache) Get(id int) (models.MortgageInfoResponse, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -64,7 +63,7 @@ func (c *Cache) Get(id int) (models.MortgageInfoResponse, bool) {
 	return models.MortgageInfoResponse{}, false
 }
 
-// IsEmpty проверяет на пустоту
+// IsEmpty возвращает true, если кэш не содержит элементов.
 func (c *Cache) IsEmpty() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()

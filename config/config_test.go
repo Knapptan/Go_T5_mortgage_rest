@@ -1,4 +1,4 @@
-// Тесты пакета config
+// Package config_test содержит модульные тесты для пакета config.
 package config_test
 
 import (
@@ -11,11 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestLoad_Success проверяет успешную загрузку конфигурации с заданным портом.
 func TestLoad_Success(t *testing.T) {
-	// Создаем временный YAML-файл
-	content := []byte(`
-port: 9090
-`)
+	content := []byte(`port: 9090`)
 	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
 	defer os.Remove(tmpfile.Name())
@@ -24,16 +22,13 @@ port: 9090
 	require.NoError(t, err)
 	require.NoError(t, tmpfile.Close())
 
-	// Вызываем функцию
 	cfg, err := Load(tmpfile.Name())
 	require.NoError(t, err)
-
-	// Проверяем результаты
 	assert.Equal(t, 9090, cfg.Port)
 }
 
+// TestLoad_DefaultPort проверяет, что по умолчанию устанавливается порт 8080, если он не задан.
 func TestLoad_DefaultPort(t *testing.T) {
-	// Создаем конфиг без порта
 	content := []byte(``)
 	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
@@ -45,17 +40,18 @@ func TestLoad_DefaultPort(t *testing.T) {
 
 	cfg, err := Load(tmpfile.Name())
 	require.NoError(t, err)
-	assert.Equal(t, 8080, cfg.Port) // проверяем значение по умолчанию
+	assert.Equal(t, 8080, cfg.Port)
 }
 
+// TestLoad_FileNotExist проверяет поведение при отсутствии конфигурационного файла.
 func TestLoad_FileNotExist(t *testing.T) {
 	_, err := Load("non_existent_file.yaml")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "error reading config")
 }
 
+// TestLoad_InvalidYAML проверяет, что возвращается ошибка при неверном формате YAML.
 func TestLoad_InvalidYAML(t *testing.T) {
-	// Создаем битый YAML
 	content := []byte(`port: "should_be_number"`)
 	tmpfile, err := os.CreateTemp("", "*.yaml")
 	require.NoError(t, err)
@@ -70,6 +66,7 @@ func TestLoad_InvalidYAML(t *testing.T) {
 	assert.Contains(t, err.Error(), "error parsing config")
 }
 
+// TestLoad_EmptyConfig проверяет поведение при пустом объекте конфигурации.
 func TestLoad_EmptyConfig(t *testing.T) {
 	content := []byte(`{}`)
 	tmpfile, err := os.CreateTemp("", "*.yaml")
@@ -82,9 +79,10 @@ func TestLoad_EmptyConfig(t *testing.T) {
 
 	cfg, err := Load(tmpfile.Name())
 	require.NoError(t, err)
-	assert.Equal(t, 8080, cfg.Port) // должно подставиться значение по умолчанию
+	assert.Equal(t, 8080, cfg.Port)
 }
 
+// TestLoad_PortBoundaries проверяет корректность обработки крайних значений порта.
 func TestLoad_PortBoundaries(t *testing.T) {
 	tests := []struct {
 		name     string

@@ -1,4 +1,4 @@
-// Тесты осноной логики сервиса calculator
+// Package calculator_test содержит модульные тесты основной логики пакета calculator.
 package calculator_test
 
 import (
@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestCalculate проверяет корректность расчётов для валидных входных данных с разными программами ипотеки.
 func TestCalculate(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -122,6 +123,7 @@ func TestCalculate(t *testing.T) {
 	}
 }
 
+// TestCalculate_InvalidParameters проверяет ошибки валидации при некорректных входных данных.
 func TestCalculate_InvalidParameters(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -222,14 +224,13 @@ func TestCalculate_InvalidParameters(t *testing.T) {
 	}
 }
 
-// Проверяем, что NewService возвращает непустой объект
+// TestNewService проверяет, что NewService возвращает непустой экземпляр Service.
 func TestNewService(t *testing.T) {
 	s := NewService()
 	assert.NotNil(t, s)
 }
 
-// TestService_Calculate_WrapsCalculate проверяет, что метод Service.Calculate
-// действительно просто вызывает функцию Calculate и возвращает её результат.
+// TestNewService проверяет, что NewService возвращает непустой экземпляр Service.
 func TestService_Calculate_WrapsCalculate(t *testing.T) {
 	svc := NewService()
 
