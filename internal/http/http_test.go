@@ -1,134 +1,80 @@
-// Тесты пакета http
+// Тесты middleware и routes
 package http_test
 
 import (
 	"bytes"
-	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	. "github.com/Knapptan/Go_T5_mortgage_rest/internal/http"
-	"github.com/Knapptan/Go_T5_mortgage_rest/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockCache реализует MortgageCache
-type MockCache struct {
+type MockHandler struct {
 	mock.Mock
 }
 
-func (m *MockCache) Add(response models.MortgageResponse) {
-	m.Called(response)
+func (m *MockHandler) Execute(c *gin.Context) {
+	m.Called(c)
 }
 
-func (m *MockCache) GetAll() []models.MortgageInfoResponse {
-	args := m.Called()
-	return args.Get(0).([]models.MortgageInfoResponse)
+func (m *MockHandler) GetCache(c *gin.Context) {
+	m.Called(c)
 }
 
-func (m *MockCache) IsEmpty() bool {
-	args := m.Called()
-	return args.Bool(0)
-}
+func TestLoggingMiddleware(t *testing.T) {
+	// Перехватываем вывод лога
+	var logOutput bytes.Buffer
+	originalOutput := log.Writer()
+	log.SetOutput(&logOutput)
+	defer log.SetOutput(originalOutput)
 
-// MockCalculator реализует MortgageCalculator
-type MockCalculator struct {
-	mock.Mock
-}
+	// Создаем тестовый роутер с middleware
+	router := gin.New()
+	router.Use(LoggingMiddleware())
+	router.GET("/test", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
-func (m *MockCalculator) Calculate(req models.MortgageRequest) (models.MortgageResponse, error) {
-	args := m.Called(req)
-	return args.Get(0).(models.MortgageResponse), args.Error(1)
-}
-
-// Вспомогательная функция для преобразования в JSON
-func mustJSON(v interface{}) []byte {
-	data, _ := json.Marshal(v)
-	return data
-}
-
-func TestExecuteHandler_Success(t *testing.T) {
-	// Инициализация моков
-	mockCalc := new(MockCalculator)
-	mockCache := new(MockCache)
-	handler := NewHandler(mockCalc, mockCache)
-
-	// Тестовые данные
-	req := models.MortgageRequest{
-		ObjectCost:     5000000,
-		InitialPayment: 1000000,
-		Months:         240,
-		Program:        models.MortgageProgram{Salary: true},
-	}
-
-	resp := models.MortgageResponse{
-		Aggregates: models.MortgageAggregates{
-			MonthlyPayment: 33458.33,
-		},
-	}
-
-	// Настройка ожиданий
-	mockCalc.On("Calculate", req).Return(resp, nil)
-	mockCache.On("Add", resp).Return()
-
-	// Создание тестового контекста
+	// Выполняем запрос
 	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("POST", "/execute", bytes.NewReader(mustJSON(req)))
-	c.Request.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest("GET", "/test", nil)
+	router.ServeHTTP(w, req)
 
-	handler.Execute(c)
-
-	// Проверки
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var response struct {
-		Result models.MortgageResponse `json:"result"`
-	}
-	json.Unmarshal(w.Body.Bytes(), &response)
-
-	assert.Equal(t, 33458.33, response.Result.Aggregates.MonthlyPayment)
-	mockCalc.AssertExpectations(t)
-	mockCache.AssertExpectations(t)
+	// Проверяем вывод
+	assert.Contains(t, logOutput.String(), "status_code: 200")
+	assert.Contains(t, logOutput.String(), "duration: ")
 }
 
-func TestGetCacheHandler_Success(t *testing.T) {
-	mockCalc := new(MockCalculator)
-	mockCache := new(MockCache)
-	handler := NewHandler(mockCalc, mockCache)
+func TestSetupRoutes(t *testing.T) {
+	// Создаем мок обработчика
+	mockHandler := new(MockHandler)
 
-	// Ожидаемые данные кэша
-	expectedItems := []models.MortgageInfoResponse{
-		{
-			ID: 1,
-			Aggregates: models.MortgageAggregates{
-				MonthlyPayment: 33458.33,
-			},
-		},
+	// Настраиваем ожидания вызовов
+	mockHandler.On("Execute", mock.Anything).Return()
+	mockHandler.On("GetCache", mock.Anything).Return()
+
+	// Создаем роутер
+	router := gin.Default()
+
+	// Настраиваем маршруты
+	SetupRoutes(router, mockHandler)
+
+	// Проверяем зарегистрированные роуты
+	routes := router.Routes()
+	assert.Len(t, routes, 2)
+
+	// Собираем маршруты в map для удобной проверки
+	routeMap := make(map[string]string)
+	for _, route := range routes {
+		routeMap[route.Path+"::"+route.Method] = route.Path
 	}
 
-	// Настройка ожиданий
-	mockCache.On("IsEmpty").Return(false)
-	mockCache.On("GetAll").Return(expectedItems)
-
-	// Создание тестового контекста
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/cache", nil)
-
-	// Вызов обработчика
-	handler.GetCache(c)
-
-	// Проверки
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var response []models.MortgageInfoResponse
-	json.Unmarshal(w.Body.Bytes(), &response)
-
-	assert.Len(t, response, 1)
-	assert.Equal(t, 33458.33, response[0].Aggregates.MonthlyPayment)
-	mockCache.AssertExpectations(t)
+	// Проверяем наличие ожидаемых маршрутов
+	assert.Contains(t, routeMap, "/execute::POST")
+	assert.Contains(t, routeMap, "/cache::GET")
 }
