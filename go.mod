@@ -1,6 +1,6 @@
 module github.com/Knapptan/Go_T5_mortgage_rest
 
-go 1.24.1
+go 1.21
 
 require (
 	github.com/gin-gonic/gin v1.10.1
