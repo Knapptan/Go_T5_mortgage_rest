@@ -1,4 +1,4 @@
-// Package calculator_test содержит тесты осноной логики сервиса
+// осноной логики сервиса
 package calculator_test
 
 import (

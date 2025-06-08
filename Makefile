@@ -43,6 +43,12 @@ docker-stop: ## Остановка и удаление контейнера
 test: ## Запустить все тесты
 	go test -v $(TEST_PACKAGES)
 
+.PHONY: test-coverage
+test-coverage: ## Запуск тестов для проверки покрытия
+	go test ./... -coverprofile=coverage.out
+  go tool cover -func=coverage.out
+  go tool cover -html=coverage.out -o coverage.html
+
 .PHONY: test-race
 test-race: ## Проверить на гонки данных
 	go test -race $(TEST_PACKAGES)
