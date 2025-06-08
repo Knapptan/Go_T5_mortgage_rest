@@ -1,61 +1,50 @@
-# Makefile для управления проектом
+# Makefile
 
 # Переменные
+NAME=mortgage-calculator
+IMAGE_NAME=mortgage-app
 COVER_PROFILE=coverage.out
 TEST_PACKAGES=$$(go list ./... \
   | grep -v "/cmd" \
   | grep -v "/internal/models")
-NAME=mortgage-calculator
-IMAGE_NAME=mortgage-app
 
 # Цели по умолчанию
 .DEFAULT_GOAL := help
 
-.PHONY: help
-help: ## Показать справку по целям
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+.PHONY: help build run lint test test-coverage test-race docker-build docker-run docker-stop clean
 
-# Основные цели
-.PHONY: build
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?##' Makefile | \
+      awk 'BEGIN {FS = ":.*?##"} {printf "  %-15s %s\n", $$1, $$2}'
+
 build: ## Собрать проект
 	go build -o bin/$(NAME) ./cmd/
 
-.PHONY: run
 run: ## Запустить сервер
 	go run ./cmd/
 
-.PHONY: lint
-lint: ## Запустить линтер
-	golangci-lint run -c .golangci.yml ./cmd/
+lint: ## Запустить линтер по всему проекту
+	golangci-lint run
 
-.PHONY: docker-build
+test: ## Запустить все тесты
+	go test -v $(TEST_PACKAGES)
+
+test-coverage: ## Покрытие >80% для бизнес-пакетов
+	@go test $(TEST_PACKAGES) -coverprofile=$(COVER_PROFILE)
+	@go tool cover -func=$(COVER_PROFILE)
+	@rm -f $(COVER_PROFILE)
+
+test-race: ## Проверить на гонки данных
+	go test -race $(TEST_PACKAGES)
+
 docker-build: ## Сборка Docker-образа
 	docker build -t $(NAME) .
 
-.PHONY: docker-run
-docker-run: ## Запуск контейнера в фоне, проброс порта
-docker run -d -p 8080:8080 --name $(IMAGE_NAME) $(NAME)
+docker-run: ## Запуск контейнера в фоне
+	docker run -d -p 8080:8080 --name $(IMAGE_NAME) $(NAME)
 
-.PHONY: docker-stop
 docker-stop: ## Остановка и удаление контейнера
-	docker stop $(IMAGE_NAME)
-	docker rm $(IMAGE_NAME)
+	docker stop $(IMAGE_NAME) && docker rm $(IMAGE_NAME)
 
-.PHONY: test
-test: ## Запустить все тесты
-	@go test -v $(TEST_PACKAGES)
-
-.PHONY: test-coverage
-test-coverage: ## Запуск тестов для проверки покрытия
-	@go test $(TEST_PACKAGES) -coverprofile=coverage.out
-	@go tool cover -func=coverage.out
-	@rm coverage.out
-
-.PHONY: test-race
-test-race: ## Проверить на гонки данных
-	@go test -race $(TEST_PACKAGES)
-
-.PHONY: clean
 clean: ## Очистить артефакты сборки
-	@rm -rf bin/
-	@rm -f $(COVER_PROFILE)
+	@rm -rf bin/ $(COVER_PROFILE)
