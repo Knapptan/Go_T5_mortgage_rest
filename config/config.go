@@ -2,6 +2,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,9 @@ import (
 type Config struct {
 	Port int `yaml:"port"`
 }
+
+// ErrInvalidPort указывает на недопустимое значение порта.
+var ErrInvalidPort = errors.New("port must be between 1 and 65535")
 
 // Load загружает и парсит конфигурацию из указанного YAML-файла.
 //
@@ -35,7 +39,7 @@ func Load(filename string) (*Config, error) {
 	}
 
 	if cfg.Port > 65535 {
-		return nil, fmt.Errorf("invalid port %d: must be between 1 and 65535", cfg.Port)
+		return nil, fmt.Errorf("%w: %d", ErrInvalidPort, cfg.Port)
 	}
 
 	return &cfg, nil
