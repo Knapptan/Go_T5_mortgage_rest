@@ -18,7 +18,7 @@ func TestCalculate(t *testing.T) {
 		err      error
 	}{
 		{
-			name: "Valid salary program",
+			name: "Valid salary program 0",
 			request: models.MortgageRequest{
 				ObjectCost:     5000000,
 				InitialPayment: 1000000,
@@ -42,6 +42,62 @@ func TestCalculate(t *testing.T) {
 					MonthlyPayment:  33458,
 					Overpayment:     4029920,
 					LastPaymentDate: time.Now().AddDate(0, 240, 0).Format("2006-01-02"),
+				},
+			},
+		},
+		{
+			name: "Valid salary program 1",
+			request: models.MortgageRequest{
+				ObjectCost:     8000000,
+				InitialPayment: 2000000,
+				Months:         200,
+				Program: struct {
+					Salary   bool `json:"salary"`
+					Military bool `json:"military"`
+					Base     bool `json:"base"`
+				}{Military: true},
+			},
+			expected: models.MortgageResponse{
+				Aggregates: struct {
+					Rate            float64 `json:"rate"`
+					LoanSum         float64 `json:"loan_sum"`
+					MonthlyPayment  float64 `json:"monthly_payment"`
+					Overpayment     float64 `json:"overpayment"`
+					LastPaymentDate string  `json:"last_payment_date"`
+				}{
+					Rate:            9,
+					LoanSum:         6000000,
+					MonthlyPayment:  58019,
+					Overpayment:     5603800,
+					LastPaymentDate: time.Now().AddDate(0, 200, 0).Format("2006-01-02"),
+				},
+			},
+		},
+		{
+			name: "Valid salary program 2",
+			request: models.MortgageRequest{
+				ObjectCost:     12000000,
+				InitialPayment: 3000000,
+				Months:         120,
+				Program: struct {
+					Salary   bool `json:"salary"`
+					Military bool `json:"military"`
+					Base     bool `json:"base"`
+				}{Base: true},
+			},
+			expected: models.MortgageResponse{
+				Aggregates: struct {
+					Rate            float64 `json:"rate"`
+					LoanSum         float64 `json:"loan_sum"`
+					MonthlyPayment  float64 `json:"monthly_payment"`
+					Overpayment     float64 `json:"overpayment"`
+					LastPaymentDate string  `json:"last_payment_date"`
+				}{
+					Rate:            10,
+					LoanSum:         9000000,
+					MonthlyPayment:  118936,
+					Overpayment:     5272320,
+					LastPaymentDate: time.Now().AddDate(0, 120, 0).Format("2006-01-02"),
 				},
 			},
 		},
