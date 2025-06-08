@@ -50,6 +50,30 @@ func TestLoggingMiddleware(t *testing.T) {
 	assert.Contains(t, logOutput.String(), "duration: ")
 }
 
+func TestLoggingMiddleware_ErrorStatus(t *testing.T) {
+	// Перехватываем вывод лога
+	var logOutput bytes.Buffer
+	originalOutput := log.Writer()
+	log.SetOutput(&logOutput)
+	defer log.SetOutput(originalOutput)
+
+	// Создаем тестовый роутер с middleware
+	router := gin.New()
+	router.Use(LoggingMiddleware())
+	router.GET("/test-error", func(c *gin.Context) {
+		c.Status(http.StatusInternalServerError)
+	})
+
+	// Выполняем запрос
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest("GET", "/test-error", nil)
+	router.ServeHTTP(w, req)
+
+	// Проверяем вывод
+	assert.Contains(t, logOutput.String(), "status_code: 500")
+	assert.Contains(t, logOutput.String(), "duration: ")
+}
+
 func TestSetupRoutes(t *testing.T) {
 	// Создаем мок обработчика
 	mockHandler := new(MockHandler)

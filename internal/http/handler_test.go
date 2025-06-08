@@ -132,3 +132,57 @@ func TestGetCacheHandler_Success(t *testing.T) {
 	assert.Equal(t, 33458.33, response[0].Aggregates.MonthlyPayment)
 	mockCache.AssertExpectations(t)
 }
+
+func TestGetCacheHandler_EmptyCache(t *testing.T) {
+	mockCalc := new(MockCalculator)
+	mockCache := new(MockCache)
+	handler := NewHandler(mockCalc, mockCache)
+
+	// Настройка ожиданий
+	mockCache.On("IsEmpty").Return(true)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/cache", nil)
+
+	handler.GetCache(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	var response map[string]string
+	json.Unmarshal(w.Body.Bytes(), &response)
+	assert.Equal(t, "empty cache", response["error"])
+	mockCache.AssertExpectations(t)
+}
+
+func TestGetCacheHandler_MultipleItems(t *testing.T) {
+	mockCalc := new(MockCalculator)
+	mockCache := new(MockCache)
+	handler := NewHandler(mockCalc, mockCache)
+
+	// Ожидаемые данные кэша (3 элемента)
+	expectedItems := []models.MortgageInfoResponse{
+		{ID: 1, Aggregates: models.MortgageAggregates{MonthlyPayment: 10000}},
+		{ID: 2, Aggregates: models.MortgageAggregates{MonthlyPayment: 20000}},
+		{ID: 3, Aggregates: models.MortgageAggregates{MonthlyPayment: 30000}},
+	}
+
+	// Настройка ожиданий
+	mockCache.On("IsEmpty").Return(false)
+	mockCache.On("GetAll").Return(expectedItems)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/cache", nil)
+
+	handler.GetCache(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response []models.MortgageInfoResponse
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	assert.Len(t, response, 3)
+	assert.Equal(t, 10000.0, response[0].Aggregates.MonthlyPayment)
+	assert.Equal(t, 30000.0, response[2].Aggregates.MonthlyPayment)
+}
