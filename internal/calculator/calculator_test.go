@@ -1,4 +1,4 @@
-// осноной логики сервиса
+// Тесты осноной логики сервиса calculator
 package calculator
 
 import (

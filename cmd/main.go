@@ -18,11 +18,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const configFile = "config.yml"
+
 func main() {
 	// Загрузка конфигурации
-	cfg, err := config.Load()
+	cfg, err := config.Load(configFile)
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		// Если не получилось — сообщаем, какой файл вызвал ошибку
+		log.Fatalf("Failed to load config from %q: %v", configFile, err)
 	}
 
 	// Инициализация компонентов
