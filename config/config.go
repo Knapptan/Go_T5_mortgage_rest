@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v3"
 )
@@ -18,7 +19,8 @@ type Config struct {
 // Если порт не задан или задан некорректно (<= 0), используется порт 8080.
 // Если порт превышает 65535, возвращается ошибка.
 func Load(filename string) (*Config, error) {
-	data, err := os.ReadFile(filename)
+	cleanPath := filepath.Clean(filename)
+	data, err := os.ReadFile(cleanPath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading config: %w", err)
 	}
