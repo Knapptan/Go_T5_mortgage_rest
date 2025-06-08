@@ -14,7 +14,7 @@ type Cache struct {
 	nextID int
 }
 
-// Конструктор
+// NewCache - конструктор
 func NewCache() *Cache {
 	return &Cache{
 		items:  make([]models.MortgageInfoResponse, 0),
@@ -22,7 +22,7 @@ func NewCache() *Cache {
 	}
 }
 
-// Метод добавления в кэш стурктуры MortgageResponse (с добавлением ID)
+// Add добавляет в кэш стурктуры MortgageResponse (с добавлением ID)
 func (c *Cache) Add(response models.MortgageResponse) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -35,22 +35,22 @@ func (c *Cache) Add(response models.MortgageResponse) {
 	}
 
 	c.nextID++
-	c.set(item)
-}
-
-// Метод добавления в массив кэша (приватный, вынесен для тестов)
-func (c *Cache) set(item models.MortgageInfoResponse) {
 	c.items = append(c.items, item)
 }
 
-// Метод получения всех записей возвращает items
+// GetAll возвращает копию среза items, чтобы внешние мутации не влияли на внутренний кеш.
 func (c *Cache) GetAll() []models.MortgageInfoResponse {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.items
+
+	// Создаём новый срез нужной длины
+	result := make([]models.MortgageInfoResponse, len(c.items))
+	// Копируем все элементы
+	copy(result, c.items)
+	return result
 }
 
-// Метод получения записи по ID
+// Get для получения записи по ID
 // Если элемент найден, возвращает (item, true).
 // Если нет — (zero, false).
 func (c *Cache) Get(id int) (models.MortgageInfoResponse, bool) {
@@ -66,7 +66,7 @@ func (c *Cache) Get(id int) (models.MortgageInfoResponse, bool) {
 	return models.MortgageInfoResponse{}, false
 }
 
-// Метод проверки на пустоту
+// IsEmpty проверяет на пустоту
 func (c *Cache) IsEmpty() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
