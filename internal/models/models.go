@@ -21,20 +21,20 @@ type MortgageProgram struct {
 // процентную ставку, сумму кредита, размер ежемесячного платежа,
 // общую переплату и дату последнего платежа.
 type MortgageAggregates struct {
+	LastPaymentDate string  `json:"last_payment_date"` // Дата последнего платежа в формате YYYY-MM-DD.
 	Rate            float64 `json:"rate"`              // Годовая процентная ставка (в процентах).
 	LoanSum         float64 `json:"loan_sum"`          // Общая сумма кредита после вычета первоначального взноса.
 	MonthlyPayment  float64 `json:"monthly_payment"`   // Размер аннуитетного ежемесячного платежа.
 	Overpayment     float64 `json:"overpayment"`       // Общая переплата за весь срок кредита.
-	LastPaymentDate string  `json:"last_payment_date"` // Дата последнего платежа в формате YYYY-MM-DD.
 }
 
 // MortgageInfoResponse представляет одну запись в кэше:
 // уникальный ID, параметры запроса и рассчитанные агрегаты.
 type MortgageInfoResponse struct {
-	ID         int                // Уникальный идентификатор расчёта.
+	Aggregates MortgageAggregates `json:"aggregates"` // Полученные агрегированные результаты.
 	Params     MortgageParams     `json:"params"`     // Входные параметры кредита.
 	Program    MortgageProgram    `json:"program"`    // Выбранная ипотечная программа.
-	Aggregates MortgageAggregates `json:"aggregates"` // Полученные агрегированные результаты.
+	ID         int                // Уникальный идентификатор расчёта.
 }
 
 // MortgageRequest описывает JSON-запрос к сервису расчёта ипотечного кредита.
@@ -48,9 +48,9 @@ type MortgageRequest struct {
 // MortgageResponse представляет успешный JSON-ответ сервиса,
 // включающий исходные параметры запроса, программу и агрегаты.
 type MortgageResponse struct {
+	Aggregates MortgageAggregates `json:"aggregates"` // Рассчитанные агрегаты кредита.
 	Params     MortgageParams     `json:"params"`     // Входные параметры кредита.
 	Program    MortgageProgram    `json:"program"`    // Выбранная ипотечная программа.
-	Aggregates MortgageAggregates `json:"aggregates"` // Рассчитанные агрегаты кредита.
 }
 
 // DateFormat задаёт формат даты для сериализации LastPaymentDate.

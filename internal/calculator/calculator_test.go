@@ -33,17 +33,17 @@ func TestCalculate(t *testing.T) {
 			},
 			expected: models.MortgageResponse{
 				Aggregates: struct {
+					LastPaymentDate string  `json:"last_payment_date"`
 					Rate            float64 `json:"rate"`
 					LoanSum         float64 `json:"loan_sum"`
 					MonthlyPayment  float64 `json:"monthly_payment"`
 					Overpayment     float64 `json:"overpayment"`
-					LastPaymentDate string  `json:"last_payment_date"`
 				}{
+					LastPaymentDate: time.Now().AddDate(0, 240, 0).Format(models.DateFormat),
 					Rate:            8,
 					LoanSum:         4000000,
 					MonthlyPayment:  33458,
 					Overpayment:     4029920,
-					LastPaymentDate: time.Now().AddDate(0, 240, 0).Format(models.DateFormat),
 				},
 			},
 		},
@@ -61,17 +61,17 @@ func TestCalculate(t *testing.T) {
 			},
 			expected: models.MortgageResponse{
 				Aggregates: struct {
+					LastPaymentDate string  `json:"last_payment_date"`
 					Rate            float64 `json:"rate"`
 					LoanSum         float64 `json:"loan_sum"`
 					MonthlyPayment  float64 `json:"monthly_payment"`
 					Overpayment     float64 `json:"overpayment"`
-					LastPaymentDate string  `json:"last_payment_date"`
 				}{
+					LastPaymentDate: time.Now().AddDate(0, 200, 0).Format(models.DateFormat),
 					Rate:            9,
 					LoanSum:         6000000,
 					MonthlyPayment:  58019,
 					Overpayment:     5603800,
-					LastPaymentDate: time.Now().AddDate(0, 200, 0).Format(models.DateFormat),
 				},
 			},
 		},
@@ -89,17 +89,17 @@ func TestCalculate(t *testing.T) {
 			},
 			expected: models.MortgageResponse{
 				Aggregates: struct {
+					LastPaymentDate string  `json:"last_payment_date"`
 					Rate            float64 `json:"rate"`
 					LoanSum         float64 `json:"loan_sum"`
 					MonthlyPayment  float64 `json:"monthly_payment"`
 					Overpayment     float64 `json:"overpayment"`
-					LastPaymentDate string  `json:"last_payment_date"`
 				}{
+					LastPaymentDate: time.Now().AddDate(0, 120, 0).Format(models.DateFormat),
 					Rate:            10,
 					LoanSum:         9000000,
 					MonthlyPayment:  118936,
 					Overpayment:     5272320,
-					LastPaymentDate: time.Now().AddDate(0, 120, 0).Format(models.DateFormat),
 				},
 			},
 		},

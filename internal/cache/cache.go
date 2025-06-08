@@ -9,9 +9,9 @@ import (
 
 // Cache представляет потокобезопасный кэш с RWMutex для хранения ипотечных расчётов.
 type Cache struct {
-	mu     sync.RWMutex
 	items  []models.MortgageInfoResponse
 	nextID int
+	mu     sync.RWMutex
 }
 
 // NewCache создаёт и возвращает новый экземпляр Cache.
